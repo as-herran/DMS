@@ -1,10 +1,19 @@
 security:
+    encoders:
+        App\Entity\User:
+            algorithm: bcrypt
+            cost: 5
+
+    enable_authenticator_manager: true
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
+        loginProvider:
+            class: App\Entity\User
+            property: email
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -12,6 +21,15 @@ security:
         main:
             lazy: true
             provider: users_in_memory
+            form_login:
+                login_path: login
+                check_path: login
+                provider: loginProvider
+                enable_csrf: true
+
+            logout:
+                path: /logout
+                target: /
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -34,6 +52,6 @@ when@test:
             # reduces the work factor to the lowest possible values.
             Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
                 algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
+                cost: 5 # Lowest possible value for bcrypt
                 time_cost: 3 # Lowest possible value for argon
                 memory_cost: 10 # Lowest possible value for argon
